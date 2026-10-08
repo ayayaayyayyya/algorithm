@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return "Server is running!"
+    return "on time "
 
 if __name__ == "__main__":
     # Cloud Run이 주입하는 PORT 환경변수 사용 (기본값 8080)
