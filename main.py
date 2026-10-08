@@ -4,11 +4,11 @@ from flask import Flask
 app = Flask(__name__)
 
 @app.route("/")
-def hello():
-    return "Hello World!"
+def index():
+    return "Server is running!"
 
 if __name__ == "__main__":
-    # Cloud Run이 부여하는 PORT 환경 변수를 읽고, 없을 경우 기본값 8080 사용
+    # Cloud Run이 주입하는 PORT 환경변수 사용 (기본값 8080)
     port = int(os.environ.get("PORT", 8080))
-    # host='0.0.0.0' 바인딩 필수 (127.0.0.1이나 localhost는 접근 불가)
+    # host='0.0.0.0' 바인딩이 핵심입니다!
     app.run(host="0.0.0.0", port=port)
