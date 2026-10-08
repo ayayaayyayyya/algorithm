@@ -3,14 +3,14 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main # main 브랜치에 코드가 푸시될 때 트리거
+      - main # main 브랜치에 코드가 푸시될 때 실행
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: algorithm-511002
   REGION: asia-northeast3 # 서울 리전
-  SERVICE_NAME: my-fastapi-app
-  # Artifact Registry 경로 (미리 GCP 콘솔에서 'cloud-run-source-deploy'라는 이름의 도커 저장소를 만들어두어야 합니다)
-  IMAGE_NAME: asia-northeast3-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/cloud-run-source-deploy/my-fastapi-app:latest
+  SERVICE_NAME: algorithm-service # Cloud Run 서비스 이름
+  # 이미 생성해 둔 gcr.io 저장소 및 커밋 해시 기반 이미지 태그 사용
+  IMAGE_NAME: gcr.io/algorithm-511002/algorithm-git:${{ github.sha }}
 
 jobs:
   deploy:
@@ -27,20 +27,24 @@ jobs:
       with:
         credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
-    # 2. Artifact Registry용 Docker 로그인
+    # 2. gcr.io 도커 인증 설정
     - name: Configure Docker
-      run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev
+      run: gcloud auth configure-docker gcr.io
 
-    # 3. Docker 이미지 빌드 및 Artifact Registry에 푸시
+    # 3. bin/Dockerfile 경로를 지정하여 Docker 이미지 빌드 및 푸시
     - name: Build and Push Docker Image
       run: |
-        docker build -t ${{ env.IMAGE_NAME }} .
+        docker build -f bin/Dockerfile -t ${{ env.IMAGE_NAME }} .
         docker push ${{ env.IMAGE_NAME }}
+
     # 4. Cloud Run으로 배포
     - name: Deploy to Cloud Run
       uses: 'google-github-actions/deploy-cloudrun@v1'
       with:
         service: ${{ env.SERVICE_NAME }}
+        region: ${{ env.REGION }}
+        image: ${{ env.IMAGE_NAME }}
+        flags: '--allow-unauthenticated' # 외부 접근 허용
         region: ${{ env.REGION }}
         image: ${{ env.IMAGE_NAME }}
         flags: '--allow-unauthenticated' # 누구나 접근 가능하도록 설정
