@@ -1,14 +1,14 @@
-from fastapi import FastAPI
 import os
+from flask import Flask
 
-app = FastAPI()
+app = Flask(__name__)
 
-@app.get("/")
-def read_root():
-    return {"message": "안녕하세요! GitHub Actions를 통해 Cloud Run에 배포된 앱입니다."}
+@app.route("/")
+def hello():
+    return "Hello World!"
 
 if __name__ == "__main__":
-    import uvicorn
-    # Cloud Run은 환경 변수 PORT를 통해 포트 번호를 전달합니다. (기본값 8080)
+    # Cloud Run이 부여하는 PORT 환경 변수를 읽고, 없을 경우 기본값 8080 사용
     port = int(os.environ.get("PORT", 8080))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    # host='0.0.0.0' 바인딩 필수 (127.0.0.1이나 localhost는 접근 불가)
+    app.run(host="0.0.0.0", port=port)
