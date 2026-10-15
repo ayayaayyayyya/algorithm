@@ -1,11 +1,24 @@
 import os
-from flask import Flask
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return "on time "
+    if request.method == "POST":
+        # 앱스 스크립트에서 보낸 JSON 데이터 받기
+        data = request.get_json(silent=True)
+        print("받은 데이터:", data)
+        
+        # 정상적으로 받았다는 응답 반환
+        return jsonify({
+            "status": "success",
+            "message": "데이터를 잘 받았어!",
+            "received_data": data
+        }), 200
+        
+    # GET 요청으로 접속했을 때
+    return "on time", 200
 
 if __name__ == "__main__":
     # Cloud Run이 주입하는 PORT 환경변수 사용 (기본값 8080)
